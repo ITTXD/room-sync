@@ -1,5 +1,6 @@
 import prisma from "./db";
 import { CreateBookingInput, JoinSessionInput } from "./validations";
+import { VENUE_TZ, composeVenueInstant, dayWindowUTC } from "./tz";
 import { SAFE_USER_SELECT, hashPassword } from "./auth";
 
 /**
@@ -177,12 +178,32 @@ export async function checkRoomConflict(
 }
 
 /**
+ * Single place that turns a validated payload time into a Date:
+ *  - `date` + "HH:mm" → venue-timezone instants (contract v2)
+ *  - ISO instant string (legacy API scripts) → taken as-is
+ * The mixing of the two contracts is rejected by CreateBookingSchema,
+ * so a `date` without a wall time here is a caller bug: fail loudly
+ * rather than silently interpreting in the server's timezone.
+ */
+function interpretBookingTime(date: string | undefined, value: string): Date {
+  if (date) {
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) {
+      throw new Error(
+        `INTERNAL: booking with \`date\` requires HH:mm times, got "${value}" (mixed contracts rejected upstream)`
+      );
+    }
+    return composeVenueInstant(date, value);
+  }
+  return new Date(value);
+}
+
+/**
  * Creates a booking safely inside an atomic Prisma interactive transaction.
  * Guarantees zero double-booking even under concurrent traffic (Race Condition Prevention).
  */
 export async function createSafeBooking(input: CreateBookingInput) {
-  const start = new Date(input.startTime);
-  const end = new Date(input.endTime);
+  const start = interpretBookingTime(input.date, input.startTime);
+  const end = interpretBookingTime(input.date, input.endTime);
 
   return await prisma.$transaction(async (tx) => {
     // 1. Verify Room exists and is active
@@ -221,9 +242,11 @@ export async function createSafeBooking(input: CreateBookingInput) {
 
     if (conflict) {
       const timeStr = `${new Date(conflict.startTime).toLocaleTimeString([], {
+        timeZone: VENUE_TZ,
         hour: "2-digit",
         minute: "2-digit",
       })} - ${new Date(conflict.endTime).toLocaleTimeString([], {
+        timeZone: VENUE_TZ,
         hour: "2-digit",
         minute: "2-digit",
       })}`;
@@ -359,10 +382,10 @@ export async function joinBookingSession(
 export async function getRoomTimeline(dateStr: string) {
   await ensureDefaultWorkspace();
 
-  // Start of day in local time
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
-  const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+  // Window of the venue-local day (Asia/Bangkok): same convention the
+  // booking modal composes instants from. Server-local vs UTC drift was
+  // the source of chips invisible on the day they were booked.
+  const { startOfDay, endOfDay } = dayWindowUTC(dateStr);
 
   const rooms = await prisma.room.findMany({
     where: { isActive: true },

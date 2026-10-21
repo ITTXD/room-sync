@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Room, Booking, User } from "@/types";
 import { Calendar, X, AlertCircle } from "lucide-react";
+import { venueDayKey } from "@/lib/tz";
 import styles from "./BookingModal.module.css";
 
 interface BookingModalProps {
@@ -42,7 +43,8 @@ export default function BookingModal({
     if (isOpen) {
       setError(null);
       setRoomId(initialRoomId || (rooms.length > 0 ? rooms[0].id : ""));
-      setDate(initialDate || new Date().toISOString().split("T")[0]);
+      // Default to the venue's business day, not the UTC date
+      setDate(initialDate || venueDayKey(new Date()));
       if (initialStartTime) {
         setStartTime(initialStartTime);
         // Default duration: 1 hour
@@ -101,9 +103,8 @@ export default function BookingModal({
     setLoading(true);
 
     try {
-      const startDateTime = new Date(`${date}T${startTime}:00`).toISOString();
-      const endDateTime = new Date(`${date}T${endTime}:00`).toISOString();
-
+      // Send venue wall time (date + HH:mm); the server composes the actual
+      // instants in the venue timezone, so the browser's offset can't drift.
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -112,8 +113,9 @@ export default function BookingModal({
           description: description || undefined,
           roomId,
           userId: currentUser.id,
-          startTime: startDateTime,
-          endTime: endDateTime,
+          date,
+          startTime,
+          endTime,
           attendeeCount: Number(attendeeCount),
         }),
       });

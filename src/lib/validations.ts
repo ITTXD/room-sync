@@ -4,35 +4,88 @@ export const BookingStatusEnum = z.enum(["CONFIRMED", "CHECKED_IN", "CANCELLED"]
 export const UserRoleEnum = z.enum(["ADMIN", "MEMBER"]);
 
 // Schema for creating a new booking
+//
+// Time contract (venue-timezone semantics, see src/lib/tz.ts):
+//  - Preferred: `date` = "YYYY-MM-DD" plus `startTime`/`endTime` = "HH:mm"
+//    wall clock in the venue timezone. The server composes the instant.
+//  - Legacy: `date` omitted and `startTime`/`endTime` are ISO instants
+//    (kept for existing API scripts).
 export const CreateBookingSchema = z
   .object({
     title: z.string().min(3, "Title must be at least 3 characters").max(100),
     description: z.string().max(500).optional(),
     roomId: z.string().min(1, "Room ID is required"),
     userId: z.string().min(1, "User ID is required"),
-    startTime: z.string().datetime("Start time must be a valid ISO date string"),
-    endTime: z.string().datetime("End time must be a valid ISO date string"),
+    date: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Format must be YYYY-MM-DD")
+      .optional(),
+    startTime: z.union([
+      z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Time must be HH:mm (24h)"),
+      z.string().datetime("Start time must be a valid ISO date string"),
+    ]),
+    endTime: z.union([
+      z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Time must be HH:mm (24h)"),
+      z.string().datetime("End time must be a valid ISO date string"),
+    ]),
     attendeeCount: z.number().int().positive("Attendee count must be at least 1"),
     allowWalkIn: z.boolean().optional().default(true),
   })
-  .refine(
-    (data) => new Date(data.startTime) < new Date(data.endTime),
-    {
-      message: "End time must be after start time",
-      path: ["endTime"],
+  .superRefine((data, ctx) => {
+    const bothWall = /^([01]\d|2[0-3]):[0-5]\d$/.test(data.startTime);
+    const endWall = /^([01]\d|2[0-3]):[0-5]\d$/.test(data.endTime);
+
+    // Reject mixing the two time contracts.
+    if (data.date && (!bothWall || !endWall)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [data.date && !bothWall ? "startTime" : "endTime"],
+        message:
+          "With a venue `date`, start/end must be HH:mm wall times (not instants)",
+      });
+      return;
     }
-  )
-  .refine(
-    (data) => {
-      const diffMs = new Date(data.endTime).getTime() - new Date(data.startTime).getTime();
-      const diffMins = diffMs / (1000 * 60);
-      return diffMins >= 15 && diffMins <= 480; // Between 15 mins and 8 hours
-    },
-    {
-      message: "Booking duration must be between 15 minutes and 8 hours",
-      path: ["endTime"],
+    if (!data.date && (bothWall || endWall)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [bothWall ? "startTime" : "endTime"],
+        message:
+          "Without a venue `date`, start/end must be ISO instants (send `date` to use wall times)",
+      });
+      return;
     }
-  );
+
+    // Work in consistent milliseconds on both branches:
+    // wall times are minutes-since-midnight scaled to ms (no calendar),
+    // ISO strings are already absolute instants.
+    const toWallMs = (t: string) => {
+      const [h, m] = t.split(":").map(Number);
+      return (h * 60 + m) * 60_000;
+    };
+    const startMs = data.date
+      ? toWallMs(data.startTime)
+      : new Date(data.startTime).getTime();
+    const endMs = data.date
+      ? toWallMs(data.endTime)
+      : new Date(data.endTime).getTime();
+
+    if (startMs >= endMs) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["endTime"],
+        message: "End time must be after start time",
+      });
+      return;
+    }
+    const diffMins = (endMs - startMs) / (1000 * 60);
+    if (diffMins < 15 || diffMins > 480) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["endTime"],
+        message: "Booking duration must be between 15 minutes and 8 hours",
+      });
+    }
+  });
 
 // Schema for updating booking status / details
 export const UpdateBookingSchema = z.object({

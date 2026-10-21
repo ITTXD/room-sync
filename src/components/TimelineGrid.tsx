@@ -12,6 +12,7 @@ import {
   Info,
   QrCode,
 } from "lucide-react";
+import { VENUE_TZ, venueDayKey, venueHourMinute } from "@/lib/tz";
 import styles from "./TimelineGrid.module.css";
 
 interface TimelineGridProps {
@@ -54,7 +55,9 @@ export default function TimelineGrid({
   };
 
   const handleToday = () => {
-    setSelectedDate(new Date().toISOString().split("T")[0]);
+    // "Today" is the venue's business day (Asia/Bangkok), not the UTC date:
+    // after 17:00 ICT the UTC calendar is already tomorrow-(negative).
+    setSelectedDate(venueDayKey(new Date()));
   };
 
   // Filter rooms
@@ -67,13 +70,15 @@ export default function TimelineGrid({
     return matchesCapacity && matchesSearch;
   });
 
-  // Calculate position of a booking within the 08:00 - 20:00 range
+  // Calculate position of a booking within the 08:00 - 20:00 range.
+  // Reads wall-clock parts in the venue timezone: viewers in other
+  // offsets must see identical chip positions and labels.
   const getBookingStyle = (booking: Booking) => {
-    const start = new Date(booking.startTime);
-    const end = new Date(booking.endTime);
+    const startDecimalHour = venueHourMinute(new Date(booking.startTime));
+    const endDecimalHour = venueHourMinute(new Date(booking.endTime));
 
-    const startDecimal = start.getHours() + start.getMinutes() / 60;
-    const endDecimal = end.getHours() + end.getMinutes() / 60;
+    const startDecimal = startDecimalHour.hour + startDecimalHour.minute / 60;
+    const endDecimal = endDecimalHour.hour + endDecimalHour.minute / 60;
 
     // Clamp within 8:00 to 20:00
     const clampedStart = Math.max(START_HOUR, Math.min(END_HOUR, startDecimal));
@@ -265,10 +270,12 @@ export default function TimelineGrid({
                         {roomBookings.map((booking) => {
                           const style = getBookingStyle(booking);
                           const startTimeStr = new Date(booking.startTime).toLocaleTimeString([], {
+                            timeZone: VENUE_TZ,
                             hour: "2-digit",
                             minute: "2-digit",
                           });
                           const endTimeStr = new Date(booking.endTime).toLocaleTimeString([], {
+                            timeZone: VENUE_TZ,
                             hour: "2-digit",
                             minute: "2-digit",
                           });

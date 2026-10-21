@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { User, Room, Booking } from "@/types";
+import { venueDayKey } from "@/lib/tz";
 import Navbar from "@/components/Navbar";
 import TimelineGrid from "@/components/TimelineGrid";
 import RoomsGrid from "@/components/RoomsGrid";
@@ -92,7 +93,9 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    setSelectedDate(new Date().toISOString().split("T")[0]);
+    // "Today" = venue business day (Asia/Bangkok), consistent with the grid,
+    // modal and queries. UTC date mismatch was the invisible-booking bug.
+    setSelectedDate(venueDayKey(new Date()));
     fetchUsers();
   }, []);
 

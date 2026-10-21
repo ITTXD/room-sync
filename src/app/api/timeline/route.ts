@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { venueDayKey } from "@/lib/tz";
 import { getRoomTimeline } from "@/lib/booking-engine";
 
 export async function GET(request: NextRequest) {
@@ -8,8 +9,8 @@ export async function GET(request: NextRequest) {
     const minCapacityParam = searchParams.get("minCapacity");
     const amenityParam = searchParams.get("amenity");
 
-    // Default to today if date not provided
-    const targetDate = dateParam || new Date().toISOString().split("T")[0];
+    // Default to today if date not provided (venue business day, not UTC)
+    const targetDate = dateParam || venueDayKey(new Date());
 
     const allRooms = await getRoomTimeline(targetDate);
 
