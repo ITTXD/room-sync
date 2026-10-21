@@ -2,44 +2,68 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-  pool: Pool | undefined;
-};
+let cachedClient: PrismaClient | null = null;
+let cachedConnStr: string | null = null;
 
-function initPrisma(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL;
-
-  if (connectionString && !connectionString.startsWith("file:")) {
-    const pool =
-      globalForPrisma.pool ??
-      new Pool({
-        connectionString,
-        max: 5,
-        ssl: { rejectUnauthorized: false },
-      });
-
-    if (process.env.NODE_ENV !== "production") {
-      globalForPrisma.pool = pool;
+function getConnectionString(): string {
+  try {
+    // Dynamic import / require to prevent errors outside Cloudflare Workers
+    const { getCloudflareContext } = require("@opennextjs/cloudflare");
+    const ctx = getCloudflareContext();
+    if (ctx?.env?.HYPERDRIVE?.connectionString) {
+      return ctx.env.HYPERDRIVE.connectionString;
     }
+    if (ctx?.env?.DATABASE_URL) {
+      return ctx.env.DATABASE_URL;
+    }
+  } catch {
+    // Running in local Node.js or build script
+  }
+
+  return process.env.DATABASE_URL || "";
+}
+
+export function getPrisma(): PrismaClient {
+  const connStr = getConnectionString();
+
+  if (cachedClient && cachedConnStr === connStr) {
+    return cachedClient;
+  }
+
+  if (connStr && !connStr.startsWith("file:")) {
+    const isLocal = connStr.includes("localhost") || connStr.includes("127.0.0.1");
+    const pool = new Pool({
+      connectionString: connStr,
+      max: 5,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
+    });
 
     const adapter = new PrismaPg(pool);
-    return new PrismaClient({
+    cachedClient = new PrismaClient({
       adapter,
       log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
     });
+    cachedConnStr = connStr;
+    return cachedClient;
   }
 
-  return new PrismaClient({
+  cachedClient = new PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
+  cachedConnStr = connStr;
+  return cachedClient;
 }
 
-export const prisma = globalForPrisma.prisma ?? initPrisma();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// Proxy wrapper so existing calls like `prisma.room.findMany()` work transparently
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrisma();
+    const val = (client as any)[prop];
+    if (typeof val === "function") {
+      return val.bind(client);
+    }
+    return val;
+  },
+});
 
 export default prisma;
-

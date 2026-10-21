@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
     "pg",
     "pg-cloudflare",
   ],
-  cacheComponents: true,
-  partialPrefetching: true,
 };
 
 export default nextConfig;
