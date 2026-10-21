@@ -67,7 +67,14 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      const text = await res.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(text || `Server returned ${res.status}`);
+      }
+
       if (!res.ok) {
         throw new Error(data.error || "Failed to create account");
       }

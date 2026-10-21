@@ -44,10 +44,16 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      const text = await res.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(text || `Server returned ${res.status}`);
+      }
 
       if (!res.ok) {
-        throw new Error(data.error || "Login failed");
+        throw new Error(data.error || text || "Login failed");
       }
 
       if (data.requiresTwoFactor) {
@@ -83,7 +89,14 @@ export default function LoginPage() {
         }),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      const text = await res.text();
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(text || `Server returned ${res.status}`);
+      }
+
       if (!res.ok) {
         throw new Error(data.error || "Invalid 2FA code");
       }

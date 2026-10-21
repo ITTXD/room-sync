@@ -34,7 +34,10 @@ export function getPrisma(): PrismaClient {
     const isLocal = connStr.includes("localhost") || connStr.includes("127.0.0.1");
     const pool = new Pool({
       connectionString: connStr,
-      max: 5,
+      max: 1,
+      maxUses: 1,
+      idleTimeoutMillis: 1000,
+      connectionTimeoutMillis: 5000,
       ssl: isLocal ? false : { rejectUnauthorized: false },
     });
 
