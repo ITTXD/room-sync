@@ -15,5 +15,8 @@
 			"binding": "HYPERDRIVE",
 			"id": "f67a7f0e06104f0e83bcfa8863a3325f"
 		}
-	]
+	],
+	"vars": {
+		"AUTH_SECRET": "roomsync-enterprise-hmac-sha256-secret-key-2026-secure"
+	}
 }
