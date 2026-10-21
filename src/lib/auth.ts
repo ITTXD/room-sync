@@ -17,10 +17,23 @@ function getJwtSecretKey(): Uint8Array {
 // 1. Cryptographic Password Hashing (node:crypto scrypt + timingSafeEqual)
 // ============================================================================
 
+// Scrypt configuration: N=16384 (CPU/memory cost), r=8 (block size), p=1 (parallelization)
+const SCRYPT_OPTIONS = {
+  N: 16384,
+  r: 8,
+  p: 1,
+  maxmem: 32 * 1024 * 1024,
+};
+
+// Dummy salt & key buffer used to equalize timing when supplied hashes are malformed
+const DUMMY_SALT = "00".repeat(32);
+const DUMMY_KEY = Buffer.alloc(64);
+
 export async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.randomBytes(16).toString("hex");
+  // Use 32 bytes (256-bit entropy) for maximum resistance to rainbow tables
+  const salt = crypto.randomBytes(32).toString("hex");
   const derivedKey = await new Promise<Buffer>((resolve, reject) => {
-    crypto.scrypt(password, salt, 64, (err, key) => {
+    crypto.scrypt(password, salt, 64, SCRYPT_OPTIONS, (err, key) => {
       if (err) reject(err);
       else resolve(key);
     });
@@ -32,19 +45,72 @@ export async function verifyPassword(
   password: string,
   storedHash: string
 ): Promise<boolean> {
+  if (!storedHash || typeof storedHash !== "string" || !storedHash.includes(":")) {
+    // Run dummy computation to resist timing analysis attacks
+    await new Promise<Buffer>((resolve) => {
+      crypto.scrypt(password || "dummy", DUMMY_SALT, 64, SCRYPT_OPTIONS, (_, key) => {
+        resolve(key || DUMMY_KEY);
+      });
+    });
+    return false;
+  }
+
   const [salt, keyHex] = storedHash.split(":");
   if (!salt || !keyHex) return false;
 
-  const keyBuffer = Buffer.from(keyHex, "hex");
+  let keyBuffer: Buffer;
+  try {
+    keyBuffer = Buffer.from(keyHex, "hex");
+  } catch {
+    return false;
+  }
+
   const derivedKey = await new Promise<Buffer>((resolve, reject) => {
-    crypto.scrypt(password, salt, 64, (err, key) => {
+    crypto.scrypt(password, salt, 64, SCRYPT_OPTIONS, (err, key) => {
       if (err) reject(err);
       else resolve(key);
     });
   });
 
-  if (keyBuffer.length !== derivedKey.length) return false;
+  if (keyBuffer.length !== derivedKey.length) {
+    // Run dummy timing check to equalize execution path
+    crypto.timingSafeEqual(derivedKey, derivedKey);
+    return false;
+  }
+
   return crypto.timingSafeEqual(keyBuffer, derivedKey);
+}
+
+// ============================================================================
+// Safe User Selection & Credential Sanitization
+// ============================================================================
+
+/**
+ * Standard Prisma User projection that excludes all sensitive credential fields
+ * (never contains passwordHash or totpSecret).
+ */
+export const SAFE_USER_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  department: true,
+  avatarUrl: true,
+  totpEnabled: true,
+  authProvider: true,
+  organizationId: true,
+  createdAt: true,
+} as const;
+
+/**
+ * Utility to strip passwordHash, totpSecret, and internal secrets from any User object.
+ */
+export function stripSensitiveUserFields<T extends Record<string, any>>(
+  user: T
+): Omit<T, "passwordHash" | "totpSecret"> {
+  if (!user) return user;
+  const { passwordHash, totpSecret, ...safeUser } = user;
+  return safeUser as Omit<T, "passwordHash" | "totpSecret">;
 }
 
 // ============================================================================

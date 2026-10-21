@@ -1,5 +1,6 @@
 import prisma from "./db";
 import { CreateBookingInput, JoinSessionInput } from "./validations";
+import { SAFE_USER_SELECT, hashPassword } from "./auth";
 
 /**
  * Generates a short, human-readable 6-char access code for QR Check-in (e.g., "RM-4K9X2A")
@@ -32,11 +33,15 @@ export async function ensureDefaultWorkspace() {
 
   const userCount = await prisma.user.count();
   if (userCount === 0) {
+    const adminHash = await hashPassword("Admin1234!");
+    const memberHash = await hashPassword("Member1234!");
+
     await prisma.user.createMany({
       data: [
         {
           name: "Admin User",
           email: "admin@roomsync.io",
+          passwordHash: adminHash,
           role: "ADMIN",
           department: "Operations",
           organizationId: org.id,
@@ -44,6 +49,7 @@ export async function ensureDefaultWorkspace() {
         {
           name: "Team Member",
           email: "member@roomsync.io",
+          passwordHash: memberHash,
           role: "MEMBER",
           department: "Engineering",
           organizationId: org.id,
@@ -90,7 +96,10 @@ export async function ensureDefaultWorkspace() {
   // Backfill accessCode & host participant for any existing bookings without accessCode
   const bookingsMissingCode = await prisma.booking.findMany({
     where: { accessCode: null },
-    include: { user: true, participants: true },
+    include: {
+      user: { select: SAFE_USER_SELECT },
+      participants: true,
+    },
   });
 
   for (const b of bookingsMissingCode) {
@@ -256,7 +265,7 @@ export async function createSafeBooking(input: CreateBookingInput) {
       },
       include: {
         room: true,
-        user: true,
+        user: { select: SAFE_USER_SELECT },
         participants: {
           where: { status: "CHECKED_IN" },
           orderBy: { checkedInAt: "asc" },

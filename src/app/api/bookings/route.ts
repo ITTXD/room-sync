@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { CreateBookingSchema } from "@/lib/validations";
 import { createSafeBooking, ensureDefaultWorkspace } from "@/lib/booking-engine";
+import { SAFE_USER_SELECT, stripSensitiveUserFields } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,14 +25,7 @@ export async function GET(request: NextRequest) {
       include: {
         room: true,
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            department: true,
-            avatarUrl: true,
-            role: true,
-          },
+          select: SAFE_USER_SELECT,
         },
         participants: {
           where: { status: "CHECKED_IN" },
@@ -88,6 +82,7 @@ export async function POST(request: NextRequest) {
         message: "Booking successfully confirmed",
         booking: {
           ...booking,
+          user: stripSensitiveUserFields(booking.user),
           room: {
             ...booking.room,
             amenities: JSON.parse(booking.room.amenitiesJson || "[]") as string[],

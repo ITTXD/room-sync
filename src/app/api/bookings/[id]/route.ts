@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { UpdateBookingSchema } from "@/lib/validations";
 import { ensureDefaultWorkspace } from "@/lib/booking-engine";
+import { SAFE_USER_SELECT } from "@/lib/auth";
 
 export async function GET(
   _request: NextRequest,
@@ -18,13 +19,7 @@ export async function GET(
       include: {
         room: true,
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            department: true,
-            avatarUrl: true,
-          },
+          select: SAFE_USER_SELECT,
         },
         participants: {
           where: { status: "CHECKED_IN" },
