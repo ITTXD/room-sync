@@ -1,0 +1,419 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.controlsBar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: #ffffff;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-xs);
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .controlsBar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.dateNavGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dateBtnGroup {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-hover);
+  padding: 4px;
+}
+
+.navArrowBtn {
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.navArrowBtn:hover {
+  background-color: #ffffff;
+  color: var(--color-text-main);
+  box-shadow: var(--shadow-2xs);
+}
+
+.todayBtn {
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.todayBtn:hover {
+  background-color: #ffffff;
+  box-shadow: var(--shadow-2xs);
+}
+
+.dateBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  background-color: #ffffff;
+}
+
+.filtersGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .searchWrapper {
+    width: 240px;
+    flex: initial;
+  }
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-subtle);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-hover);
+  padding: 6px 12px 6px 36px;
+  font-size: 12px;
+  color: var(--color-text-main);
+  box-sizing: border-box;
+  transition: all var(--transition-fast);
+}
+
+.searchInput:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: var(--color-border-focus);
+}
+
+.capacityFilterGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-hover);
+  padding: 3px;
+}
+
+.capacityBtn {
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.capacityBtnActive {
+  background-color: #ffffff;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-2xs);
+}
+
+.timelineCard {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: #ffffff;
+  box-shadow: var(--shadow-xs);
+}
+
+.timelineScroll {
+  overflow-x: auto;
+}
+
+.timelineInner {
+  min-width: 850px;
+}
+
+.timelineHeader {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  background-color: rgba(248, 250, 252, 0.85);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.roomColumnHeader {
+  width: 250px;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-right: 1px solid var(--color-border);
+  box-sizing: border-box;
+}
+
+.hoursHeaderGroup {
+  flex: 1;
+  display: flex;
+}
+
+.hourHeaderItem {
+  flex: 1;
+  border-right: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 12px 4px;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+.roomRow {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--transition-fast);
+}
+
+.roomRow:hover {
+  background-color: rgba(248, 250, 252, 0.5);
+}
+
+.roomInfoCell {
+  width: 250px;
+  flex-shrink: 0;
+  padding: 14px 16px;
+  border-right: 1px solid var(--color-border);
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.roomTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.roomDot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.roomName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roomMetaRow {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.amenitiesRow {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.amenityTag {
+  border-radius: var(--radius-xs);
+  background-color: var(--color-surface-hover);
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.timelineTrack {
+  flex: 1;
+  position: relative;
+  height: 80px;
+  background-color: rgba(248, 250, 252, 0.25);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.gridLinesWrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+
+.gridLine {
+  flex: 1;
+  border-right: 1px dashed rgba(226, 232, 240, 0.6);
+  height: 100%;
+}
+
+.bookingChip {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  border-radius: var(--radius-md);
+  padding: 8px;
+  color: #ffffff;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-fast);
+  z-index: 10;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.bookingChip:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.bookingChipHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.bookingChipTitle {
+  font-weight: 600;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookingChipOccupancy {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-xs);
+  background-color: rgba(0, 0, 0, 0.25);
+  padding: 1px 5px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.bookingChipFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+.hoverCue {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  background-color: rgba(37, 99, 235, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.timelineTrack:hover .hoverCue {
+  opacity: 1;
+}
+
+.hoverBadge {
+  border-radius: var(--radius-full);
+  background-color: rgba(37, 99, 235, 0.9);
+  color: #ffffff;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legendFooter {
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface-hover);
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.legendItems {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendColorBox {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-xs);
+}

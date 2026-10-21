@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# workflow documentation visualizer
+/workflow/
+
+# personal notes & internal planning docs
+ARCHITECTURE.md
+AUTH_PLAN.md
+*_PLAN.md
+
+# local sqlite database
+*.db
+*.db-journal

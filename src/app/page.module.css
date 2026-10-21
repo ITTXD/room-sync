@@ -1,0 +1,39 @@
+.pageWrapper {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex: 1;
+  margin: 0 auto;
+  max-width: 1280px;
+  width: 100%;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .mainContent {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mainContent {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+.loadingBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  gap: 8px;
+}

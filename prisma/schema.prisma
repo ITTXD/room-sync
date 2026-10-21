@@ -1,0 +1,115 @@
+// Prisma Schema for RoomSync Meeting Room Booking System
+// Modern, robust, and supports easy migration from SQLite to PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  openTime  String   @default("08:00") // Format "HH:mm"
+  closeTime String   @default("20:00") // Format "HH:mm"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  rooms     Room[]
+}
+
+model User {
+  id             String        @id @default(cuid())
+  name           String
+  email          String        @unique
+  passwordHash   String?       // Format "salt:hash" generated via crypto.scrypt
+  totpSecret     String?       // Base32 secret for Google Authenticator / TOTP (RFC 6238)
+  totpEnabled    Boolean       @default(false)
+  authProvider   String        @default("CREDENTIALS") // "CREDENTIALS" | "GOOGLE" | "GITHUB"
+  role           String        @default("MEMBER") // "ADMIN" | "MEMBER"
+  department     String?
+  avatarUrl      String?
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  bookings       Booking[]
+  sessions       Session[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Room {
+  id             String        @id @default(cuid())
+  name           String
+  floor          String        // e.g. "Floor 4, North Wing"
+  capacity       Int
+  amenitiesJson  String        // JSON array of strings e.g. '["Projector", "Whiteboard", "Video Conference"]'
+  colorCode      String        @default("#3b82f6") // Distinct color for calendar & timeline representation
+  isActive       Boolean       @default(true)      // Can be toggled for maintenance/repair
+  imageUrl       String?
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  bookings       Booking[]
+
+  @@index([organizationId])
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  startTime     DateTime // ISO UTC DateTime
+  endTime       DateTime // ISO UTC DateTime
+  status        String   @default("CONFIRMED") // "CONFIRMED" | "CHECKED_IN" | "CANCELLED"
+  attendeeCount Int      @default(1) // Planned / expected audience size
+  accessCode    String?  @unique     // Short code for QR Check-in e.g. "RM-8X9K2P"
+  allowWalkIn   Boolean  @default(true) // Whether other team members can join/co-use the session
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roomId        String
+  room          Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  participants  BookingParticipant[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([roomId, startTime, endTime])
+  @@index([userId])
+}
+
+model BookingParticipant {
+  id          String   @id @default(cuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId      String?
+  name        String
+  department  String?
+  role        String   @default("AUDIENCE") // "HOST" | "AUDIENCE"
+  status      String   @default("CHECKED_IN") // "CHECKED_IN" | "LEFT"
+  checkedInAt DateTime @default(now())
+
+  @@index([bookingId])
+}

@@ -1,0 +1,465 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 150ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  border-radius: var(--radius-xl);
+  background-color: #ffffff;
+  padding: 24px;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-border);
+  max-height: 92vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 16px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.iconSquare {
+  display: flex;
+  height: 44px;
+  width: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  box-shadow: var(--shadow-2xs);
+  flex-shrink: 0;
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin: 0;
+}
+
+.liveBadge {
+  border-radius: var(--radius-full);
+  background-color: var(--color-success-bg);
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+}
+
+.metaRow {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.metaLocation {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.closeBtn {
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  border: none;
+  background: none;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-main);
+}
+
+.bodyGrid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .bodyGrid {
+    grid-template-columns: 5fr 7fr;
+  }
+}
+
+.qrPassCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-hover);
+  padding: 20px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.qrInstruction {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.qrSubtext {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0 0 16px;
+}
+
+.qrWrapper {
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  background-color: #ffffff;
+  padding: 16px;
+  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--color-border);
+}
+
+.codeLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-subtle);
+}
+
+.codeValue {
+  margin-top: 2px;
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--color-text-main);
+}
+
+.qrBtnGroup {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.copyBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: #ffffff;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-2xs);
+}
+
+.copyBtn:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.externalLinkBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-light);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.externalLinkBtn:hover {
+  background-color: #dbeafe;
+}
+
+.rosterCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.occupancyCard {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: #ffffff;
+  padding: 16px;
+  box-shadow: var(--shadow-2xs);
+}
+
+.occupancyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.occupancyTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.occupancyBadge {
+  border-radius: var(--radius-full);
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badgeNormal {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.badgeFull {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.progressBarTrack {
+  margin-top: 10px;
+  height: 8px;
+  width: 100%;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-hover);
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 300ms ease;
+}
+
+.occupancyFooter {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.joinForm {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-hover);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.joinFormTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.joinFormInputs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .joinFormInputs {
+    grid-template-columns: 2fr 2fr 1fr;
+  }
+}
+
+.joinInput {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: #ffffff;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--color-text-main);
+  box-sizing: border-box;
+}
+
+.joinInput:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.joinSubmitBtn {
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.joinSubmitBtn:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.joinSubmitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rosterList {
+  max-height: 190px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 4px;
+}
+
+.participantCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: #ffffff;
+  padding: 8px 12px;
+  font-size: 12px;
+  box-shadow: var(--shadow-2xs);
+}
+
+.participantAvatar {
+  display: flex;
+  height: 28px;
+  width: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 10px;
+}
+
+.participantNameRow {
+  font-weight: 600;
+  color: var(--color-text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.roleHost {
+  border-radius: var(--radius-xs);
+  background-color: #e0e7ff;
+  color: #3730a3;
+  padding: 1px 4px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.roleAudience {
+  border-radius: var(--radius-xs);
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-muted);
+  padding: 1px 4px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.participantSubtext {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.leaveBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.leaveBtn:hover {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
